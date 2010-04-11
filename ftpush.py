@@ -18,7 +18,7 @@ class Monitor(pyinotify.ProcessEvent):
         self.url += '/' if self.url[-1] != '/' else ''
         self.ignore = ignore
 
-        # Extract username, login, and remote path information from the FTP URL.
+        # Extract username, login, and remote path information from the FTP.
         matches = re.search('(?:ftp://)?(?:([^:]*):([^@]*)@|([^@]*)@)?([^/]*)(?:/(.*))?', self.url)
         username = matches.group(1)
         password = matches.group(2)
@@ -141,7 +141,7 @@ class Monitor(pyinotify.ProcessEvent):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser(description = 'Monitor a local directory for file changes and automatically upload a modified file '
-                                                 'to a remote URL.',
+                                                 'to a remote FTP.',
                                    version = "0.0.1",
                                    usage = 'usage: %prog -u,--url=<url> -p,--path=<local path> [ -i,--ignore=<ignore files> ]',
                                    epilog = 'Copyright 2010, Ton van den Heuvel, Ecomation, see LICENSE for more details.')
