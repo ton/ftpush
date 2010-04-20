@@ -3,7 +3,7 @@
 ftpush.py - Copyright 2010, Ton van den Heuvel, Ecomation
 '''
 
-import ftplib, getpass, optparse, os, re
+import ftplib, getpass, optparse, os, re, threading
 import pyinotify
 
 class Monitor(pyinotify.ProcessEvent):
@@ -20,26 +20,20 @@ class Monitor(pyinotify.ProcessEvent):
 
         # Extract username, login, and remote path information from the FTP.
         matches = re.search('(?:ftp://)?(?:([^:]*):([^@]*)@|([^@]*)@)?([^/]*)(?:/(.*))?', self.url)
-        username = matches.group(1)
-        password = matches.group(2)
-        if not username:
-            username = matches.group(3)
-        server = matches.group(4)
-        remote_path = matches.group(5)
+        self.username = matches.group(1)
+        self.password = matches.group(2)
+        if not self.username:
+            self.username = matches.group(3)
+        self.server = matches.group(4)
+        self.remote_path = matches.group(5)
 
-        if username and not password:
-            password = getpass.getpass('> Password: ')
+        if self.username and not self.password:
+            self.password = getpass.getpass('> Password: ')
 
-        self.ftp = ftplib.FTP(server, username, password)
+        self.connect()
 
-        if username:
-            print "> Connected to '%s' with username '%s'..." % (server, username)
-        else:
-            print "> Connected to '%s'" % server
-
-        self.ftp.cwd(remote_path)
-
-        print "> Changed remote directory to '%s'" % remote_path
+        timer = threading.Timer(500, self.keep_alive)
+        timer.start()
 
     def event_handler(f):
         def decorated(self, event):
@@ -53,6 +47,25 @@ class Monitor(pyinotify.ProcessEvent):
                 print '! Error: %s' % error
 
         return decorated
+
+    def connect(self):
+        self.ftp = ftplib.FTP(self.server, self.username, self.password)
+
+        if self.username:
+            print "> Connected to '%s' with username '%s'..." % (self.server, self.username)
+        else:
+            print "> Connected to '%s'" % server
+
+        self.ftp.cwd(self.remote_path)
+
+        print "> Changed remote directory to '%s'" % self.remote_path
+
+    def keep_alive(self):
+        print "> Ping..."
+        self.ftp.nlst()
+
+        timer = threading.Timer(500, self.keep_alive)
+        timer.start()
 
     def remove(self, pathname, is_dir):
         relative_path = os.path.relpath(pathname)
