@@ -1,4 +1,4 @@
-Monitor a local directory for file changes and automatically upload any modified file to a FTP URL.
+Monitor a local directory for file changes and automatically upload any modified file to an FTP server.
 
 Dependencies:
 - python-pyinotify >= 0.8.6
