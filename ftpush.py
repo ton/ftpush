@@ -60,6 +60,9 @@ class Monitor(pyinotify.ProcessEvent):
 
         print "> Changed remote directory to '%s'" % self.remote_path
 
+    def stop_keep_alive_timer(self):
+        self.timer.cancel()
+
     def keep_alive(self):
         print "> Ping..."
         self.ftp.nlst()
@@ -146,7 +149,7 @@ class Monitor(pyinotify.ProcessEvent):
             pass
 
         # Stop keep alive thread.
-        self.timer.cancel();
+        self.stop_keep_alive_timer()
 
         # TODO: raises an exception, maybe this is due to pyinotify 0.8.6,
         # check with updated 0.8.9 whether this still happens
@@ -176,8 +179,10 @@ if __name__ == '__main__':
     if not options.url or not options.path:
         parser.print_usage()
     else:
+        monitor = Monitor(options.url, options.path, options.ignore.split(','))
         try:
-            Monitor(options.url, options.path, options.ignore.split(',')).start()
-        except ftplib.all_errors as e:
+            monitor.start()
+        except Exception as e:
+            monitor.stop_keep_alive_timer()
             print "\n> Fatal error monitoring '%s': %s" % (options.url, e)
             raise
