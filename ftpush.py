@@ -32,8 +32,8 @@ class Monitor(pyinotify.ProcessEvent):
 
         self.connect()
 
-        timer = threading.Timer(500, self.keep_alive)
-        timer.start()
+        self.timer = threading.Timer(500, self.keep_alive)
+        self.timer.start()
 
     def event_handler(f):
         def decorated(self, event):
@@ -64,8 +64,8 @@ class Monitor(pyinotify.ProcessEvent):
         print "> Ping..."
         self.ftp.nlst()
 
-        timer = threading.Timer(500, self.keep_alive)
-        timer.start()
+        self.timer = threading.Timer(500, self.keep_alive)
+        self.timer.start()
 
     def remove(self, pathname, is_dir):
         relative_path = os.path.relpath(pathname)
@@ -144,6 +144,9 @@ class Monitor(pyinotify.ProcessEvent):
             self.notifier.loop()
         except (KeyboardInterrupt, SystemExit):
             pass
+
+        # Stop keep alive thread.
+        self.timer.cancel();
 
         # TODO: raises an exception, maybe this is due to pyinotify 0.8.6,
         # check with updated 0.8.9 whether this still happens
