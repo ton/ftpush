@@ -7,23 +7,23 @@ import ftplib, getpass, optparse, os, re, threading
 import pyinotify
 
 class Monitor(pyinotify.ProcessEvent):
-    def __init__(self, url, path, ignore):
+    def __init__(self, url, username, path, ignore):
+        self.path = os.path.abspath(path)
+        self.url = url
+        self.url += '/' if self.url[-1] != '/' else ''
+        self.username = username
+        self.ignore = [] if ignore == '' else ignore.split(',')
+
         wm = pyinotify.WatchManager()
         self.notifier = pyinotify.Notifier(wm, self)
         wm.add_watch(path, pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE |
                            pyinotify.IN_MOVED_FROM | pyinotify.IN_MOVED_TO, rec = True, auto_add = True)
 
-        self.path = os.path.abspath(path)
-        self.url = url
-        self.url += '/' if self.url[-1] != '/' else ''
-        self.ignore = ignore
-
         # Extract username, login, and remote path information from the FTP.
         matches = re.search('(?:ftp://)?(?:([^:]*):([^@]*)@|([^@]*)@)?([^/]*)(?:/(.*))?', self.url)
-        self.username = matches.group(1)
-        self.password = matches.group(2)
         if not self.username:
-            self.username = matches.group(3)
+            self.username = matches.group(1) if matches.group(1) else matches.group(3)
+        self.password = matches.group(2)
         self.server = matches.group(4)
         self.remote_path = matches.group(5)
 
@@ -164,9 +164,12 @@ if __name__ == '__main__':
                                    version = "0.0.1",
                                    usage = 'usage: %prog -u,--url=<url> -p,--path=<local path> [ -i,--ignore=<ignore files> ]',
                                    epilog = 'Copyright 2010, Ton van den Heuvel, Ecomation, see LICENSE for more details.')
-    parser.add_option('-u', '--url',
+    parser.add_option('-f', '--ftp',
                       dest = 'url',
-                      help = 'remote FTP path to synchronise with, including username and password information')
+                      help = 'remote FTP path to synchronise with, may include username and password information')
+    parser.add_option('-u', '--user',
+                      dest = 'username',
+                      help = 'username to login with')
     parser.add_option('-p', '--path',
                       dest = 'path',
                       default = '.',
@@ -179,7 +182,7 @@ if __name__ == '__main__':
     if not options.url or not options.path:
         parser.print_usage()
     else:
-        monitor = Monitor(options.url, options.path, options.ignore.split(','))
+        monitor = Monitor(options.url, options.username, options.path, options.ignore)
         try:
             monitor.start()
         except Exception as e:
