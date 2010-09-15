@@ -31,9 +31,7 @@ class Monitor(pyinotify.ProcessEvent):
             self.password = getpass.getpass('> Password: ')
 
         self.connect()
-
-        self.timer = threading.Timer(500, self.keep_alive)
-        self.timer.start()
+        self.keep_alive()
 
     def event_handler(f):
         def decorated(self, event):
