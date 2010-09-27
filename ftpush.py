@@ -62,7 +62,6 @@ class Monitor(pyinotify.ProcessEvent):
         self.timer.cancel()
 
     def keep_alive(self):
-        print "> Ping..."
         self.ftp.nlst()
 
         self.timer = threading.Timer(500, self.keep_alive)
