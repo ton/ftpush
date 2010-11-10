@@ -88,24 +88,27 @@ class Monitor(pyinotify.ProcessEvent):
             print "> Deleted '%s'..." % relative_path
 
     def upload(self, pathname):
-        pathname = os.path.relpath(pathname)
-        if os.path.isdir(pathname):
-            self.ftp.mkd(pathname)
-            print "> Created directory '%s'..." % pathname
+        try:
+            pathname = os.path.relpath(pathname)
+            if os.path.isdir(pathname):
+                self.ftp.mkd(pathname)
+                print "> Created directory '%s'..." % pathname
 
-            # TODO: remove in case pyinotify issue #8 has been resolved, see
-            # http://trac.dbzteam.org/pyinotify/ticket/8 for more information
-            for filename in os.listdir(pathname):
-                self.upload(pathname + '/' + filename)
-        else:
-            filename = os.path.relpath(pathname)
-            filesize = os.path.getsize(pathname)
+                # TODO: remove in case pyinotify issue #8 has been resolved, see
+                # http://trac.dbzteam.org/pyinotify/ticket/8 for more information
+                for filename in os.listdir(pathname):
+                    self.upload(pathname + '/' + filename)
+            else:
+                filename = os.path.relpath(pathname)
+                filesize = os.path.getsize(pathname)
 
-            fp = open(pathname, 'r')
-            self.ftp.storbinary('STOR ' + filename, fp)
-            fp.close()
+                fp = open(pathname, 'r')
+                self.ftp.storbinary('STOR ' + filename, fp)
+                fp.close()
 
-            print "> Uploaded '%s' (%d bytes)..." % (filename, filesize)
+                print "> Uploaded '%s' (%d bytes)..." % (filename, filesize)
+        except:
+            print "> Problem uploading '%s'..." % (filename, filesize)
 
     @event_handler
     def process_IN_DELETE(self, event):
