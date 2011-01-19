@@ -108,7 +108,7 @@ class Monitor(pyinotify.ProcessEvent):
 
                 print "> Uploaded '%s' (%d bytes)..." % (filename, filesize)
         except:
-            print "> Problem uploading '%s'..." % (os.path.relpath(pathname), filesize)
+            print "> Problem uploading '%s'..." % (os.path.relpath(pathname))
 
     @event_handler
     def process_IN_DELETE(self, event):
