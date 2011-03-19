@@ -19,7 +19,7 @@ class Monitor(pyinotify.ProcessEvent):
         wm.add_watch(path, pyinotify.IN_CREATE | pyinotify.IN_CLOSE_WRITE | pyinotify.IN_DELETE |
                            pyinotify.IN_MOVED_FROM | pyinotify.IN_MOVED_TO, rec = True, auto_add = True)
 
-        # Extract username, login, and remote path information from the FTP.
+        # Extract username, login, and remote path information from the FTP URL.
         matches = re.search('(?:ftp://)?(?:([^:]*):([^@]*)@|([^@]*)@)?([^/]*)(?:/(.*))?', self.url)
         if not self.username:
             self.username = matches.group(1) if matches.group(1) else matches.group(3)
@@ -64,15 +64,15 @@ class Monitor(pyinotify.ProcessEvent):
     def keep_alive(self):
         self.ftp.nlst()
 
-        self.timer = threading.Timer(500, self.keep_alive)
+        self.timer = threading.Timer(250, self.keep_alive)
         self.timer.start()
 
     def remove(self, pathname, is_dir):
         relative_path = os.path.relpath(pathname)
 
         if is_dir:
-            # TODO: remove in case pyinotify issue #8 has been resolved, see
-            # http://trac.dbzteam.org/pyinotify/ticket/8 for more information
+            # TODO: remove in case pyinotify issue #2 has been resolved, see
+            # https://github.com/seb-m/pyinotify/issues#issue/2 for more information
             for pathname in self.ftp.nlst(relative_path):
                 filename = pathname.split('/')[-1]
                 if filename != '..' and filename != '.':
@@ -94,8 +94,8 @@ class Monitor(pyinotify.ProcessEvent):
                 self.ftp.mkd(pathname)
                 print "> Created directory '%s'..." % pathname
 
-                # TODO: remove in case pyinotify issue #8 has been resolved, see
-                # http://trac.dbzteam.org/pyinotify/ticket/8 for more information
+                # TODO: remove in case pyinotify issue #2 has been resolved, see
+                # https://github.com/seb-m/pyinotify/issues#issue/2 for more information
                 for filename in os.listdir(pathname):
                     self.upload(pathname + '/' + filename)
             else:
