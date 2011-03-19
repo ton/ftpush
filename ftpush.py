@@ -163,7 +163,7 @@ if __name__ == '__main__':
                                                  'to a remote FTP.',
                                    version = "0.0.1",
                                    usage = 'usage: %prog -u,--url=<url> -p,--path=<local path> [ -i,--ignore=<ignore files> ]',
-                                   epilog = 'Copyright 2010, Ton van den Heuvel, Ecomation, see LICENSE for more details.')
+                                   epilog = 'Copyright (c) 2010, Ton van den Heuvel, see LICENSE for more details.')
     parser.add_option('-f', '--ftp',
                       dest = 'url',
                       help = 'remote FTP path to synchronise with, may include username and password information')
