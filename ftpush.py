@@ -94,8 +94,8 @@ class Monitor(pyinotify.ProcessEvent):
             self.printMessage("Deleted '%s'" % relative_path)
 
     def upload(self, pathname):
+        pathname = os.path.relpath(pathname)
         try:
-            pathname = os.path.relpath(pathname)
             if os.path.isdir(pathname):
                 self.ftp.mkd(pathname)
                 self.printMessage("Created directory '%s'" % pathname)
@@ -105,16 +105,10 @@ class Monitor(pyinotify.ProcessEvent):
                 for filename in os.listdir(pathname):
                     self.upload(pathname + '/' + filename)
             else:
-                filename = os.path.relpath(pathname)
-                filesize = os.path.getsize(pathname)
-
-                fp = open(pathname, 'r')
-                self.ftp.storbinary('STOR ' + filename, fp)
-                fp.close()
-
-                self.printMessage("Uploaded '%s' (%d bytes)" % (filename, filesize))
+                self.ftp.storbinary('STOR ' + pathname, open(pathname, 'r'))
+                self.printMessage("Uploaded '%s' (%d bytes)" % (pathname, os.path.getsize(pathname)))
         except:
-            self.printMessage("Problem uploading '%s'" % (os.path.relpath(pathname)))
+            self.printMessage("Problem uploading '%s'" % (pathname))
 
     @event_handler
     def process_IN_DELETE(self, event):
