@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-ftpush.py - Copyright 2010, Ton van den Heuvel, Ecomation
+ftpush.py - Copyright 2010-2011, Ton van den Heuvel
 '''
 
 import ftplib, getpass, optparse, os, re, threading
@@ -163,7 +163,7 @@ if __name__ == '__main__':
                                                  'to a remote FTP.',
                                    version = "0.0.1",
                                    usage = 'usage: %prog -u,--url=<url> -p,--path=<local path> [ -i,--ignore=<ignore files> ]',
-                                   epilog = 'Copyright (c) 2010, Ton van den Heuvel, see LICENSE for more details.')
+                                   epilog = 'Copyright (c) 2010-2011, Ton van den Heuvel, see LICENSE for more details.')
     parser.add_option('-f', '--ftp',
                       dest = 'url',
                       help = 'remote FTP path to synchronise with, may include username and password information')
