@@ -33,6 +33,12 @@ class Monitor(pyinotify.ProcessEvent):
         self.connect()
         self.keep_alive()
 
+    def printError(s):
+        print "! Error: %s..." % s
+
+    def printMessage(s):
+        print "> %s..." % s
+
     def event_handler(f):
         def decorated(self, event):
             for regex in self.ignore:
@@ -42,7 +48,7 @@ class Monitor(pyinotify.ProcessEvent):
             try:
                 f(self, event)
             except ftplib.error_perm as error:
-                print '! Error: %s' % error
+                self.printError(error)
 
         return decorated
 
@@ -50,13 +56,13 @@ class Monitor(pyinotify.ProcessEvent):
         self.ftp = ftplib.FTP(self.server, self.username, self.password)
 
         if self.username:
-            print "> Connected to '%s' with username '%s'..." % (self.server, self.username)
+            self.printMessage("Connected to '%s' with username '%s'" % (self.server, self.username))
         else:
-            print "> Connected to '%s'" % server
+            self.printMessage("Connected to '%s'" % server)
 
         self.ftp.cwd(self.remote_path)
 
-        print "> Changed remote directory to '%s'" % self.remote_path
+        self.printMessage("Changed remote directory to '%s'" % self.remote_path)
 
     def stop_keep_alive_timer(self):
         self.timer.cancel()
@@ -82,17 +88,17 @@ class Monitor(pyinotify.ProcessEvent):
                         self.remove(pathname, True)
 
             self.ftp.rmd(relative_path)
-            print "> Deleted directory '%s'..." % relative_path
+            self.printMessage("Deleted directory '%s'" % relative_path)
         else:
             self.ftp.delete(relative_path)
-            print "> Deleted '%s'..." % relative_path
+            self.printMessage("Deleted '%s'" % relative_path)
 
     def upload(self, pathname):
         try:
             pathname = os.path.relpath(pathname)
             if os.path.isdir(pathname):
                 self.ftp.mkd(pathname)
-                print "> Created directory '%s'..." % pathname
+                self.printMessage("Created directory '%s'" % pathname)
 
                 # TODO: remove in case pyinotify issue #2 has been resolved, see
                 # https://github.com/seb-m/pyinotify/issues#issue/2 for more information
@@ -106,9 +112,9 @@ class Monitor(pyinotify.ProcessEvent):
                 self.ftp.storbinary('STOR ' + filename, fp)
                 fp.close()
 
-                print "> Uploaded '%s' (%d bytes)..." % (filename, filesize)
+                self.printMessage("Uploaded '%s' (%d bytes)" % (filename, filesize))
         except:
-            print "> Problem uploading '%s'..." % (os.path.relpath(pathname))
+            self.printMessage("Problem uploading '%s'" % (os.path.relpath(pathname)))
 
     @event_handler
     def process_IN_DELETE(self, event):
@@ -143,7 +149,7 @@ class Monitor(pyinotify.ProcessEvent):
 
     def start(self):
         try:
-            print "> Start monitoring '%s'..." % self.path
+            self.printMessage("Start monitoring '%s'" % self.path)
             self.notifier.loop()
         except (KeyboardInterrupt, SystemExit):
             pass
@@ -187,5 +193,5 @@ if __name__ == '__main__':
             monitor.start()
         except Exception as e:
             monitor.stop_keep_alive_timer()
-            print "\n> Fatal error monitoring '%s': %s" % (options.url, e)
+            self.printError("fatal error monitoring '%s': %s" % (options.url, e))
             raise
