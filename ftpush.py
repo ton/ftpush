@@ -75,23 +75,25 @@ class Monitor(pyinotify.ProcessEvent):
 
     def remove(self, pathname, is_dir):
         relative_path = os.path.relpath(pathname)
+        try:
+            if is_dir:
+                # TODO: remove in case pyinotify issue #2 has been resolved, see
+                # https://github.com/seb-m/pyinotify/issues#issue/2 for more information
+                for pathname in self.ftp.nlst(relative_path):
+                    filename = pathname.split('/')[-1]
+                    if filename != '..' and filename != '.':
+                        try:
+                            self.remove(pathname, False)
+                        except:
+                            self.remove(pathname, True)
 
-        if is_dir:
-            # TODO: remove in case pyinotify issue #2 has been resolved, see
-            # https://github.com/seb-m/pyinotify/issues#issue/2 for more information
-            for pathname in self.ftp.nlst(relative_path):
-                filename = pathname.split('/')[-1]
-                if filename != '..' and filename != '.':
-                    try:
-                        self.remove(pathname, False)
-                    except:
-                        self.remove(pathname, True)
-
-            self.ftp.rmd(relative_path)
-            self.printMessage("Deleted directory '%s'" % relative_path)
-        else:
-            self.ftp.delete(relative_path)
-            self.printMessage("Deleted '%s'" % relative_path)
+                self.ftp.rmd(relative_path)
+                self.printMessage("Deleted directory '%s'" % relative_path)
+            else:
+                self.ftp.delete(relative_path)
+                self.printMessage("Deleted '%s'" % relative_path)
+        except Exception as e:
+            self.printMessage("Problem removing %s '%s': %s" % ('directory' if is_dir else 'file', relative_path, e))
 
     def upload(self, pathname):
         pathname = os.path.relpath(pathname)
