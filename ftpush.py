@@ -33,10 +33,10 @@ class Monitor(pyinotify.ProcessEvent):
         self.connect()
         self.keep_alive()
 
-    def printError(s):
+    def printError(self, s):
         print "! Error: %s..." % s
 
-    def printMessage(s):
+    def printMessage(self, s):
         print "> %s..." % s
 
     def event_handler(f):
@@ -187,5 +187,5 @@ if __name__ == '__main__':
             monitor.start()
         except Exception as e:
             monitor.stop_keep_alive_timer()
-            self.printError("fatal error monitoring '%s': %s" % (options.url, e))
+            monitor.printError("fatal error monitoring '%s': %s" % (options.url, e))
             raise
