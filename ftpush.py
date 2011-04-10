@@ -68,7 +68,10 @@ class Monitor(pyinotify.ProcessEvent):
         self.timer.cancel()
 
     def keep_alive(self):
-        self.ftp.nlst()
+        try:
+            self.ftp.nlst()
+        except Exception as e:
+            self.printMessage("Problem sending keep alive: %s" % (e))
 
         self.timer = threading.Timer(250, self.keep_alive)
         self.timer.start()
